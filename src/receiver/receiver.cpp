@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include <Msg.h>
+#include <MsgMap.h>
 
 using namespace yarp::os;
 
@@ -15,29 +16,40 @@ int main(int argc, char *argv[]) {
     std::cerr << "In Receiver" << std::endl;
 
     Network yarp;
-    // Port output;
+
+    // Port without map
     BufferedPort<Msg> input;
     input.open("/receiver");
     Network::connect("/sender","/receiver");
 
+    // Port with map
+    BufferedPort<MsgMap> inputMap;
+    inputMap.open("/receiverMap");
+    Network::connect("/senderMap","/receiverMap");
+
 
     int top = 100;
      for (int i=1; i<=top; i++) {
-        // prepare a message
+
         Msg* myMsg;
         myMsg = input.read(true);
+        MsgMap* myMsgMap;
+        myMsgMap = inputMap.read(true);
 
-        std::cerr << "my message is: " 
+        std::cerr << "message no map: " 
                   << myMsg->names[0] << " " << myMsg->values[0] << " "
                   << myMsg->names[1] << " " << myMsg->values[1] << " "
-                  << " map_2 " << myMsg->mapValues["map_2"]
-                  << " map_3 " << myMsg->mapValues["map_3"]
+                  << std::endl;
+        std::cerr << "message with map: "    
+                  << " map_2 " << myMsgMap->mapValues["map_2"]
+                  << " map_3 " << myMsgMap->mapValues["map_3"]
                   << std::endl;
 
         // wait a while
         Time::delay(1);
     }
     input.close();
+    inputMap.close();
 
     return 0;
 }
